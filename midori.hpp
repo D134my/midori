@@ -79,7 +79,9 @@ constexpr auto except_index(auto &container,
 }
 
 auto from(int one, int two) {
-  std::vector<int> vec(two);
+
+  std::vector<int> vec(two - one + 1);
+
   std::iota(vec.begin(), vec.end(), one);
 
   return vec;
