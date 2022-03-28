@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 #include <vector>
 
@@ -78,11 +79,14 @@ constexpr auto except_index(auto &container,
   return arr;
 }
 
-auto from(int one, int two) {
+auto in_range(int from, int to, int how = 1) {
 
-  std::vector<int> vec(two - one + 1);
+  std::vector<int> vec;
+  std::size_t count{0};
 
-  std::iota(vec.begin(), vec.end(), one);
+  for (int i{from}; i <= to; i += how) {
+    vec.push_back(i);
+  }
 
   return vec;
 }
