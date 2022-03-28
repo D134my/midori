@@ -82,7 +82,6 @@ constexpr auto except_index(auto &container,
 auto in_range(int from, int to, int how = 1) {
 
   std::vector<int> vec;
-  std::size_t count{0};
 
   for (int i{from}; i <= to; i += how) {
     vec.push_back(i);
