@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 template <typename Iterator, typename Sentinel = Iterator> struct range_t {
@@ -44,6 +46,7 @@ template <typename Iterable> auto range(Iterable &r) {
   return range(std::begin(r), std::end(r));
 }
 
+// iterate over all elements except first one
 template <typename C> constexpr auto except_first(C &c) {
   auto r = range(c);
   if (r.empty())
@@ -52,6 +55,7 @@ template <typename C> constexpr auto except_first(C &c) {
   return r.without_front();
 }
 
+// iterate over all elements except last one
 template <typename C> constexpr auto except_last(C &c) {
   auto r = range(c);
   if (r.empty())
@@ -60,8 +64,11 @@ template <typename C> constexpr auto except_last(C &c) {
   return r.without_back();
 }
 
-// only works with std::vector and std::deque
-constexpr auto except_index(auto &container,
+/* only works with std::vector and std::deque
+  iterate over elements except
+*/
+template <typename Vec_Deq>
+constexpr auto except_index(Vec_Deq &container,
                             std::initializer_list<std::size_t> index) {
 
   if (container.empty())
@@ -79,6 +86,7 @@ constexpr auto except_index(auto &container,
   return arr;
 }
 
+// iterate in range from, to
 auto in_range(int from, int to, int how = 1) {
 
   std::vector<int> vec;
@@ -88,4 +96,56 @@ auto in_range(int from, int to, int how = 1) {
   }
 
   return vec;
+}
+
+// call non void functions multiple times
+template <typename Fn, typename... Args>
+constexpr auto MULTI_FUNC_CALL_V(std::size_t number, Fn &&function,
+                                 Args &&...args) noexcept {
+
+  if constexpr (!std::is_same<decltype(std::invoke(function, args...)),
+                              void>{}) {
+    try {
+      throw std::bad_function_call();
+
+    } catch (std::exception const &e) {
+      std::cerr << e.what()
+                << " : your function has a non void return type ! ! use "
+                   "MULTI_FUNC_CALL \n";
+      std::exit(-1);
+    }
+
+  } else {
+
+    for ([[maybe_unused]] auto &&i : in_range(0, number)) {
+      std::invoke(function, args...);
+    }
+  }
+}
+
+// call void functions multiple times
+template <typename Fn, typename... Args>
+constexpr auto MULTI_FUNC_CALL(std::size_t number, Fn &&function,
+                               Args &&...args) noexcept {
+
+  if constexpr (std::is_same<decltype(std::invoke(function, args...)),
+                             void>{}) {
+    try {
+      throw std::bad_function_call();
+
+    } catch (std::exception const &e) {
+      std::cerr << e.what()
+                << " : your function has a void return type ! use "
+                   "MULTI_FUNC_CALL_V\n";
+      std::exit(-1);
+    }
+
+  } else {
+
+    decltype(std::invoke(function, args...)) result;
+    for ([[maybe_unused]] auto &&i : in_range(0, number)) {
+      result = std::invoke(function, args...);
+    }
+    return result;
+  }
 }
